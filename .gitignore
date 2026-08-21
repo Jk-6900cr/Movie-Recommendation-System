@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+.vscode/
+
+ml/data/ml-100k/
+ml/data/ml-100k.zip
+
+ml/data/cleaned_user_preferences.csv
+ml/data/feature_engineered_users.csv
+ml/data/movie_training_data.csv
+ml/data/Movie Recommendation Profile.csv
+
+.env
