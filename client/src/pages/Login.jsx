@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/auth/AuthLayout.jsx'
 import FormField from '../components/auth/FormField.jsx'
 import PasswordToggle from '../components/auth/PasswordToggle.jsx'
-import { loginUser } from '../utils/auth.js'
+import { hasCompletedProfile, loginUser } from '../utils/auth.js'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -66,7 +66,7 @@ export default function Login() {
         return
       }
 
-      navigate('/dashboard')
+      navigate(hasCompletedProfile() ? '/dashboard' : '/profile')
     }, 600)
   }
 

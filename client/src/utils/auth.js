@@ -2,6 +2,7 @@ const USERS_KEY = 'cinematch_users'
 const USER_KEY = 'cinematch_user'
 const CURRENT_USER_KEY = 'cinematch_current_user'
 const AUTH_KEY = 'cinematch_auth'
+const PROFILE_COMPLETED_KEY = 'profileCompleted'
 
 function normalizeEmail(email = '') {
   return String(email).trim().toLowerCase()
@@ -21,6 +22,10 @@ function readUsers() {
 
 function writeUsers(users) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users))
+}
+
+function setProfileCompleted(value) {
+  localStorage.setItem(PROFILE_COMPLETED_KEY, value ? 'true' : 'false')
 }
 
 function setCurrentUser(user) {
@@ -91,10 +96,13 @@ export function registerUser({ name, email, password }) {
     email: trimmedEmail,
     password: trimmedPassword,
     registered: true,
+    profileCompleted: false,
   }
 
   users.push(newUser)
   writeUsers(users)
+  setAuthenticated(true)
+  setProfileCompleted(false)
   setCurrentUser(newUser)
 
   return { success: true, user: newUser }
@@ -110,18 +118,19 @@ export function loginUser({ email, password }) {
   if (!user) {
     return {
       success: false,
-      message: 'No account found with this email. Please sign up first.',
+      message: 'No account found with this email.',
     }
   }
 
   if (user.password !== trimmedPassword) {
     return {
       success: false,
-      message: 'Incorrect password. Please try again.',
+      message: 'Incorrect password.',
     }
   }
 
   setAuthenticated(true)
+  setProfileCompleted(user.profileCompleted === true)
   setCurrentUser({ ...user, password: trimmedPassword })
 
   return { success: true, user: { ...user, password: trimmedPassword } }
@@ -131,8 +140,31 @@ export function getCurrentUser() {
   return getUser()
 }
 
+export function hasCompletedProfile() {
+  return getUser()?.profileCompleted === true && localStorage.getItem(PROFILE_COMPLETED_KEY) === 'true'
+}
+
+export function markProfileCompleted() {
+  const currentUser = getUser()
+  if (!currentUser?.email) return false
+
+  const users = readUsers()
+  const normalizedCurrentEmail = normalizeEmail(currentUser.email)
+  const updatedUsers = users.map((user) =>
+    normalizeEmail(user.email) === normalizedCurrentEmail
+      ? { ...user, profileCompleted: true }
+      : user,
+  )
+
+  writeUsers(updatedUsers)
+  setProfileCompleted(true)
+  setCurrentUser({ ...currentUser, profileCompleted: true })
+  return true
+}
+
 export function logoutUser() {
   localStorage.removeItem(AUTH_KEY)
+  localStorage.removeItem(PROFILE_COMPLETED_KEY)
   localStorage.removeItem(CURRENT_USER_KEY)
   localStorage.removeItem(USER_KEY)
 }
